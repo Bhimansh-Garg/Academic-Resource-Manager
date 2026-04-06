@@ -1,59 +1,78 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Header } from '../components/Header';
+import { Outlet, NavLink } from 'react-router-dom';
 
 export const DashboardPage = () => {
   const { user } = useContext(AuthContext);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const getRoleMessage = (role) => {
-    switch (role) {
-      case 'student': return "You can browse and upload resources.";
-      case 'faculty': return "You can verify submitted resources.";
-      case 'admin': return "You can manage users and the system.";
-      default: return "";
-    }
-  };
+  if (!user) return <div className="p-8">Loading...</div>;
+
+  const links = [];
+
+  // Common link
+  links.push({ to: '/dashboard/browse', label: 'Browse Resources', icon: '📚' });
+
+  if (user.role === 'student' || user.role === 'faculty' || user.role === 'admin') {
+    links.push({ to: '/dashboard/upload', label: 'Upload Resource', icon: '📤' });
+    links.push({ to: '/dashboard/my-uploads', label: 'My Uploads', icon: '📁' });
+  }
+
+  if (user.role === 'faculty') {
+    links.push({ to: '#', label: 'Pending Verifications (Coming Soon)', icon: '📋' });
+  }
+
+  if (user.role === 'admin') {
+    links.push({ to: '#', label: 'Manage Users (Coming Soon)', icon: '⚙️' });
+  }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       
-      <main className="flex-grow p-8 max-w-6xl mx-auto w-full">
-        <div className="mb-8 border-b-2 border-gold pb-4">
-          <h2 className="text-2xl font-serif text-navy-900 font-bold uppercase">
-            Dashboard Overview
-          </h2>
-          <p className="text-gray-600 mt-2 font-sans font-medium text-lg">
-            {user ? getRoleMessage(user.role) : 'Loading...'}
-          </p>
-        </div>
-
-        {/* ERP Style Module Tiles */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-navy-900 border-r border-navy-900 text-white transition-all duration-300 flex flex-col shadow-lg z-10`}>
+          <div className="p-4 flex items-center justify-between border-b border-gray-700">
+            {sidebarOpen && <span className="font-bold tracking-wider text-sm text-gold uppercase">Navigation</span>}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-300 hover:text-white">
+              ☰
+            </button>
+          </div>
           
-          <div className="bg-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex items-center gap-4 group">
-            <div className="text-3xl">📚</div>
-            <h3 className="text-black font-bold uppercase tracking-wide group-hover:text-navy-900 transition-colors">
-              Academic Resources
-            </h3>
-          </div>
+          <nav className="flex-1 py-4 space-y-1">
+            {links.map((link, idx) => (
+              link.to === '#' ? (
+                <div key={idx} className="flex items-center px-4 py-3 text-gray-400 text-sm cursor-not-allowed border-l-4 border-transparent">
+                  <span className="mr-3 text-lg opacity-50">{link.icon}</span>
+                  {sidebarOpen && <span className="whitespace-nowrap">{link.label}</span>}
+                </div>
+              ) : (
+                <NavLink
+                  key={idx}
+                  to={link.to}
+                  className={({ isActive }) => 
+                    `flex items-center px-4 py-3 text-sm transition-colors border-l-4 ${
+                      isActive 
+                      ? 'bg-navy-900 border-gold text-gold font-bold shadow-[inset_0_3px_6px_rgba(0,0,0,0.16)]' 
+                      : 'border-transparent text-gray-200 hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  <span className={`mr-3 text-lg`}>{link.icon}</span>
+                  {sidebarOpen && <span className="whitespace-nowrap">{link.label}</span>}
+                </NavLink>
+              )
+            ))}
+          </nav>
+        </aside>
 
-          <div className="bg-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex items-center gap-4 group">
-            <div className="text-3xl">📋</div>
-            <h3 className="text-black font-bold uppercase tracking-wide group-hover:text-navy-900 transition-colors">
-              Verification Portal
-            </h3>
-          </div>
-
-          <div className="bg-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 flex items-center gap-4 group">
-            <div className="text-3xl">⚙️</div>
-            <h3 className="text-black font-bold uppercase tracking-wide group-hover:text-navy-900 transition-colors">
-              System Settings
-            </h3>
-          </div>
-
-        </div>
-      </main>
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto bg-white p-6 relative">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

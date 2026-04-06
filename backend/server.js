@@ -3,14 +3,22 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
+const resourceRoutes = require('./src/routes/resourceRoutes');
+const subjectRoutes = require('./src/routes/subjectRoutes');
+const path = require('path');
 
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// Main Auth Routes
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/subjects', subjectRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

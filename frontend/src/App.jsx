@@ -3,6 +3,9 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { BrowseResourcesPage } from './pages/BrowseResourcesPage';
+import { UploadResourcePage } from './pages/UploadResourcePage';
+import { MyUploadsPage } from './pages/MyUploadsPage';
 
 function App() {
   return (
@@ -18,7 +21,12 @@ function App() {
             <DashboardPage />
           </ProtectedRoute>
         } 
-      />
+      >
+        <Route index element={<Navigate to="browse" replace />} />
+        <Route path="browse" element={<BrowseResourcesPage />} />
+        <Route path="upload" element={<UploadResourcePage />} />
+        <Route path="my-uploads" element={<MyUploadsPage />} />
+      </Route>
       
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
